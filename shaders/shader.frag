@@ -13,31 +13,20 @@ uniform vec4 filterArea;
 uniform float time;
 uniform vec2 lightPos;
 
-// http://www.html5gamedevs.com/topic/28597-vtexturecoord-and-custom-filters-on-pixi-v4/
-vec2 mapCoord( vec2 coord ) {
-    coord *= filterArea.xy;
-    return coord;
-}
-
 void main (void) {
     
-    // time taken for texure to scroll
+    // time taken for texture to scroll
     float cycleTime = 20.0;
     // speed for water flow
     float flowSpeed = 0.5;
 
     vec2 uv = vTextureCoord.xy;
 
-    // "filters work with region onRender textures, not the full texture..."
-    // http://www.html5gamedevs.com/topic/28597-vtexturecoord-and-custom-filters-on-pixi-v4/
-    vec2 mappedCoord = mapCoord(uv) / vec2 (512, 512);
-
     // unroll normal from flow map
-    vec2 flowDirection = (texture2D(uFlow, mappedCoord).rg - 0.5) * 2.0; 
-    flowDirection.r *= -1.0;
+    vec2 flowDirection = (texture2D(uFlow, uv).rg - 0.5) * 2.0; 
 
     // sample noise texture for added "perturb" on flow cycle
-    float noise = texture2D (uNoise, mappedCoord).r * .5;
+    float noise = texture2D (uNoise, uv).r * .5;
 
     // calc flow offsets
     float t1 = noise + time / cycleTime;
@@ -50,8 +39,8 @@ void main (void) {
     vec2 flowDirection1 = flowDirection * cycleTime1 * flowSpeed;
     vec2 flowDirection2 = flowDirection * cycleTime2 * flowSpeed;
 
-    vec2 uv1 = mappedCoord + flowDirection1;
-    vec2 uv2 = mappedCoord + flowDirection2;
+    vec2 uv1 = uv + flowDirection1;
+    vec2 uv2 = uv + flowDirection2;
 
     // sample bump map
     vec3 color1 = normalize (texture2D (uBump, uv1).rgb * 2.0 - 1.0);
